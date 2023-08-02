@@ -1,0 +1,26 @@
+import numpy as np
+import pandas as pd
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.models import BayesianNetwork
+from pgmpy.inference import VariableElimination
+
+heartDisease = pd.read_csv('heart.csv')
+heartDisease = heartDisease.replace('?', np.nan)
+
+model = BayesianNetwork([('Age', 'AHD'), ('Sex', 'AHD'), ('ExAng', 'AHD'),
+                        ('ChestPain', 'AHD'), ('AHD', 'RestECG'), ('AHD', 'Chol')])
+
+model.fit(heartDisease, estimator=MaximumLikelihoodEstimator)
+
+# Inferencing with Bayesian Network
+HeartDiseasetest_infer = VariableElimination(model)
+
+# Get user inputs for evidence
+user_inputs = {}
+user_inputs['RestECG'] = int(input("Enter the RestECG value (0 or 1 or 2): "))
+user_inputs['ChestPain'] = input("Enter the ChestPain value (typical, asymptomatic, nonanginal, nontypical): ")
+
+# Perform inference with user inputs
+print(f"\nProbability of HeartDisease given evidence RestECG={user_inputs['RestECG']} and ChestPain={user_inputs['ChestPain']}")
+result = HeartDiseasetest_infer.query(variables=['AHD'], evidence=user_inputs)
+print(result)
